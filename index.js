@@ -14,7 +14,7 @@ app.get("/bot", () => main());
 // (0 10 1 * *) -> executa sempre as 10 da manhã, no primeiro dia de cada mes
 cron.schedule("0 10 1 * *", async () => {
   try {
-    await axios.get(`http://localhost:${port}/bot`);
+    await axios.get(`https://unisaomiguel-bot.onrender.com/bot`);
   } catch (error) {
     console.error("Erro na requisição:", error.message);
   }
