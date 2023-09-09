@@ -11,14 +11,16 @@ const port = 3333;
 app.get("/", (req, res) => res.send("Hello World!"));
 app.get("/bot", () => main());
 
-// (0 10 1 * *) -> executa sempre as 10 da manhã, no primeiro dia de cada mes
-cron.schedule("0 10 1 * *", async () => {
+// (0 10 1 * *) -> executa sempre as 10 da manhã, no primeiro dia de cada mes */5 * * * *
+const cronJob = cron.schedule("*/5 * * * *", async () => {
   try {
-    await axios.get(`https://unisaomiguel-bot.onrender.com/bot`);
+    await axios.get(`https://meu-tim-bot.onrender.com/bot`);
   } catch (error) {
     console.error("Erro na requisição:", error.message);
   }
 });
+
+cronJob.start();
 
 async function main() {
   try {
@@ -30,25 +32,21 @@ async function main() {
 
     await page.setExtraHTTPHeaders({ "Cache-Control": "no-cache" });
     page.setDefaultTimeout(180_000);
-    page.setDefaultNavigationTimeout(60_000);
 
-    // Navigate the page to a URL
+    await page.setViewport({ width: 1080, height: 1024 });
     await page.goto(
       "https://sociedadecultural115129.rm.cloudtotvs.com.br:8080/Web/app/edu/PortalEducacional/login/"
     );
-    // await page.waitForNavigation();
+    console.log("Executando bot...");
+    console.log("---------------------------------------------");
 
-    // Set screen size
-    await page.setViewport({ width: 1080, height: 1024 });
-
-    // Wait and click on first result
     const inputUser = await page.waitForSelector("#User");
     const inputSenha = await page.waitForSelector("#Pass");
-    const btnEntrar = "input[value=Acessar]";
+    const btnEntrar = await page.waitForSelector("input[value=Acessar]");
 
     await inputUser.type(process.env.CPF, { delay: 50 });
     await inputSenha.type(process.env.SENHA, { delay: 50 });
-    await page.click(btnEntrar);
+    await btnEntrar.click();
 
     await getFatura(page);
 
@@ -59,23 +57,20 @@ async function main() {
     setTimeout(() => main(), 5000);
   }
 }
+// main();
 
 async function getFatura(page) {
-  page.setDefaultNavigationTimeout(60_000);
-  await page.waitForTimeout(15_000);
+  const btnPagarFatura = await page.waitForSelector(
+    "a.link-widget:nth-child(1)"
+  );
 
-  const btnPagarFatura = "a.link-widget:nth-child(1)";
-
-  await page.click(btnPagarFatura);
+  await btnPagarFatura.click();
 
   await sendMailWithContent(page);
 }
 
 async function sendMailWithContent(page) {
-  await page.setDefaultNavigationTimeout(60_000);
-  await page.waitForTimeout(15_000);
-
-  const codigoDeBarras = await page.$("ng-bind-html");
+  const codigoDeBarras = await page.waitForSelector("ng-bind-html");
 
   const codigoDeBarrasContent = await codigoDeBarras.evaluate(
     (element) => element.textContent
@@ -93,7 +88,7 @@ async function sendMailWithContent(page) {
 
   const message = {
     from: `Gabriel Simplicio <${process.env.EMAIL1}>`,
-    to: `${process.env.EMAIL1}, ${process.env.EMAIL2}`,
+    to: `${process.env.EMAIL1}`,
     subject: "Código de barras boleto UNISÃOMIGUEL",
     text: `Código de barras do boleto desse mês:
 
