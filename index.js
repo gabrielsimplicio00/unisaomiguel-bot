@@ -8,15 +8,15 @@ import "dotenv/config";
 const app = express();
 const port = 3333;
 
-app.get("/", (req, res) => res.send("Hello World!"));
-app.get("/bot", () => main());
+// app.get("/", (req, res) => res.send("Hello World!"));
+// app.get("/bot", () => main());
 
 // (0 10 1 * *) -> executa sempre as 10 da manhã, no primeiro dia de cada mes */5 * * * *
 const cronJob = cron.schedule("*/5 * * * *", async () => {
   try {
-    await axios.get(`https://meu-tim-bot.onrender.com/bot`);
+    main();
   } catch (error) {
-    console.error("Erro na requisição:", error.message);
+    console.error("Erro na execução da função:", error.message);
   }
 });
 
