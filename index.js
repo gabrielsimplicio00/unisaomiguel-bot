@@ -25,8 +25,15 @@ cronJob.start();
 async function main() {
   try {
     const browser = await puppeteer.launch({
-      headless: false,
+      executablePath: "/usr/bin/chromium-browser",
+      headless: "new",
       slowMo: 100,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-extensions",
+      ],
     });
     const page = await browser.newPage();
 
